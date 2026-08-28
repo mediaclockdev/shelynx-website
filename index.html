@@ -35,7 +35,6 @@
       html {
         scroll-behavior: smooth;
         scroll-padding-top: 0px;
-        overflow-x: hidden;
         
       }
       section[id],
@@ -59,7 +58,6 @@
         font-size: clamp(16px, 1.1vw, 18px);
         line-height: 1.65;
         -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
       }
       img {
         max-width: 100%;
@@ -197,6 +195,7 @@
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid var(--line);
+        box-shadow: 0 8px 30px -10px rgba(176, 17, 56, 0.08);
         transition: background 0.3s ease;
       }
       nav {
@@ -712,28 +711,39 @@
       /* ---------- gallery ---------- */
       .rail {
         display: flex;
-        gap: clamp(18px, 3vw, 42px);
+        gap: 24px;
         overflow-x: auto;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         padding-bottom: 24px;
         scroll-snap-type: x mandatory;
-        scrollbar-width: thin;
-        scrollbar-color: var(--petal) transparent;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
       }
       .rail::-webkit-scrollbar {
-        height: 8px;
-      }
-      .rail::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .rail::-webkit-scrollbar-thumb {
-        background: var(--petal);
-        border-radius: 4px;
+        display: none;
       }
       .shot {
-        flex: 0 0 clamp(220px, 26vw, 300px);
-        scroll-snap-align: center;
+        flex: 0 0 calc((100% - 96px) / 5);
+        scroll-snap-align: start;
         text-align: center;
+      }
+      @media (max-width: 1024px) {
+        .shot {
+          flex: 0 0 calc((100% - 48px) / 3);
+        }
+      }
+      @media (max-width: 768px) {
+        .shot {
+          flex: 0 0 calc((100% - 24px) / 2);
+        }
+      }
+      @media (max-width: 540px) {
+        .shot {
+          flex: 0 0 100%;
+        }
       }
       .shot img {
         width: 100%;
@@ -797,7 +807,7 @@
         color: var(--ink);
       }
       .flow-step p {
-        font-size: 14px;
+        font-size: 15px;
         color: var(--mute);
         line-height: 1.45;
       }
@@ -1025,7 +1035,7 @@
         margin: 36px auto 20px;
         padding: 24px var(--pad) 0;
         border-top: 1px solid var(--line);
-        font-size: 15px;
+        font-size: 16px;
         line-height: 1.65;
         color: var(--mute);
         opacity: 0.9;
@@ -1687,6 +1697,29 @@
           }
         });
       });
+
+      // Auto-sliding Carousel for Gallery
+      const rail = document.querySelector(".rail");
+      if (rail) {
+        let isDown = false;
+        
+        rail.addEventListener('mousedown', () => isDown = true);
+        rail.addEventListener('mouseup', () => isDown = false);
+        rail.addEventListener('touchstart', () => isDown = true);
+        rail.addEventListener('touchend', () => isDown = false);
+
+        setInterval(() => {
+          if (isDown) return;
+          const maxScrollLeft = rail.scrollWidth - rail.clientWidth;
+          if (rail.scrollLeft >= maxScrollLeft - 10) {
+            rail.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            const shot = rail.querySelector('.shot');
+            const scrollAmount = shot.clientWidth + 24;
+            rail.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+          }
+        }, 3000);
+      }
 
       // Run once on load
       window.dispatchEvent(new Event("scroll"));
